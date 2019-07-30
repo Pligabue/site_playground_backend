@@ -5,7 +5,7 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route("/")
-def home():
+def home(): 
     return "Hello!"
 
 @app.route("/login", methods=["POST"])
@@ -25,6 +25,10 @@ def editName():
 @app.route("/edit/email", methods=["PUT"])
 def editEmail():
     return
+
+@app.route("/edit/delete", methods=["DELETE"])
+def editDelete():
+    return    
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) #run app in debug mode on port 5000
