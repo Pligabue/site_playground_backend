@@ -1,17 +1,18 @@
 import mysql.connector
 
-mydb = mysql.connector.connect (
-    host="localhost",
-    user="root",
-    passwd="senha123",
-    database="testdb"
-)
+def sqlQuery(sqlFormula, sqlTuple):
 
-mycursor = mydb.cursor()
+    mydb = mysql.connector.connect (
+        host="localhost",
+        user="root",
+        passwd="senha123",
+        database="site_playground"
+    )
 
-mycursor.execute("SHOW TABLES")
+    mycursor = mydb.cursor()
+    
+    mycursor.execute(sqlFormula, sqlTuple)
 
-for tb in mycursor:
-    print(tb)
+    mydb.commit()
 
-mydb.close()
+    mydb.close()
