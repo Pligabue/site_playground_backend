@@ -22,20 +22,19 @@ def logout():
 def login():  
 
     data = request.get_json()
-    sqlFormula = "SELECT password FROM users WHERE email = " + data["email"]
+    sqlFormula = "SELECT password, token, idusers FROM users WHERE email = " + "\"" + data["email"] + "\""
     user = myDB.sqlQuery(sqlFormula)
-
-    if user.password == hash(data["password"]):
+    if user[0][0] == hash(data["password"]):
 
         sqlFormula = "UPDATE users SET isActive = %s"
         sqlTuple = (1, )
         myDB.sqlChange(sqlFormula, sqlTuple)
 
         response = {
-            "token" : user.token,
-            "idusers" : user.idusers
+            "token" : user[0][1],
+            "idusers" : user[0][2]
         }
-
+        print("\n\nRESPONSE", response, "\n\n")
         return jsonify(response)
 
     response = {
