@@ -3,6 +3,7 @@ from flask_cors import CORS
 
 import random
 import myDB
+import hashlib
 
 app = Flask(__name__)
 CORS(app)
@@ -22,9 +23,16 @@ def logout():
 def login():  
 
     data = request.get_json()
+
+    h = hashlib.md5()
+    h.update(data["password"].encode('utf-8'))
+    h = h.hexdigest()
+
     sqlFormula = "SELECT password, token, idusers FROM users WHERE email = " + "\"" + data["email"] + "\""
+        
     user = myDB.sqlQuery(sqlFormula)
-    if user[0][0] == hash(data["password"]):
+    
+    if user[0][0] == h:
 
         sqlFormula = "UPDATE users SET isActive = %s"
         sqlTuple = (1, )
@@ -34,7 +42,7 @@ def login():
             "token" : user[0][1],
             "idusers" : user[0][2]
         }
-        print("\n\nRESPONSE", response, "\n\n")
+
         return jsonify(response)
 
     response = {
@@ -44,22 +52,33 @@ def login():
 
     return jsonify(response)
 
-@app.route("/login", methods=["POST"])
+@app.route("/verifylogin", methods=["POST"])
 def verifyToken():
 
     data = request.get_json()
+
     sqlFormula = "SELECT token FROM users WHERE idusers = " + str(data["idusers"])
-    token = myDB.sqlQuery(sqlFormula)
+    
+    token = myDB.sqlQuery(sqlFormula)[0][0]
+    
     if token == data["token"]:
-        return True
-    return False
+        
+        return jsonify(True)
+        
+    return jsonify(False)
 
 @app.route("/signup", methods=["POST"])
 def signUp():
 
     data = request.get_json()
+
+    h = hashlib.md5()
+    h.update(data["password"].encode('utf-8'))
+    h = h.hexdigest()
+    
     sqlFormula = "INSERT INTO users (email, username, password, loginStatus, token, isActive, admin) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-    sqlTuple = (data["email"], data["user"], hash(data["password"]), False, random.randint(0, 999), True, False)
+    
+    sqlTuple = (data["email"], data["user"], h, False, random.randint(0, 999), True, False)
     myDB.sqlChange(sqlFormula, sqlTuple)
     return jsonify(data)
 
