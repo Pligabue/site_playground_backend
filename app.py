@@ -9,15 +9,16 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout(): 
 
     data = request.get_json()
-    sqlFormula = "UPDATE users SET isActive = %s, token = %s WHERE idusers = %s"
+    print("\n\nData is : ", data, "\n\n")
+    sqlFormula = "UPDATE users SET loginStatus = %s, token = %s WHERE idusers = %s"
     sqlTuple = (0, random.randint(0, 999), data["idusers"])
     myDB.sqlChange(sqlFormula, sqlTuple)
 
-    return True
+    return jsonify(True)
 
 @app.route("/login", methods=["POST"])
 def login():  
@@ -34,7 +35,7 @@ def login():
     
     if user[0][0] == h:
 
-        sqlFormula = "UPDATE users SET isActive = %s"
+        sqlFormula = "UPDATE users SET loginStatus = %s WHERE email = " + "\"" + data["email"] + "\""
         sqlTuple = (1, )
         myDB.sqlChange(sqlFormula, sqlTuple)
 
