@@ -2,36 +2,45 @@ import mysql.connector
 
 def sqlChange(sqlFormula, sqlTuple):
 
-    mydb = mysql.connector.connect (
-        host="localhost",
-        user="root",
-        passwd="senha123",
-        database="site_playground"
-    )
+    try:
 
-    mycursor = mydb.cursor()
-    
-    mycursor.execute(sqlFormula, sqlTuple)
+        mydb = mysql.connector.connect (
+            host="localhost",
+            user="root",
+            passwd="senha123",
+            database="site_playground"
+        )
+        mycursor = mydb.cursor()
+        mycursor.execute(sqlFormula, sqlTuple)
+        mydb.commit()
+        mydb.close()
 
-    mydb.commit()
+        print("SUCCESS")
+        return True
 
-    mydb.close()
+    except mysql.connector.Error as err:
+        print("Something went wrong: {}".format(err))
+        return False
+        
 
 def sqlQuery(sqlFormula):
 
-    mydb = mysql.connector.connect (
-        host="localhost",
-        user="root",
-        passwd="senha123",
-        database="site_playground"
-    )
+    try:
 
-    mycursor = mydb.cursor()
-    
-    mycursor.execute(sqlFormula)
+        mydb = mysql.connector.connect (
+            host="localhost",
+            user="root",
+            passwd="senha123",
+            database="site_playground"
+        )
+        mycursor = mydb.cursor()
+        mycursor.execute(sqlFormula)
+        data = mycursor.fetchall()
+        mydb.close()
 
-    data = mycursor.fetchall()
+        print("SUCCESS")
+        return data
 
-    mydb.close()
-
-    return data
+    except mysql.connector.Error as err:
+        print("Something went wrong: {}".format(err))
+        return False

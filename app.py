@@ -1,24 +1,24 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+app = Flask(__name__)
+CORS(app)
+
 import random
 import myDB
 import hashlib
 
-app = Flask(__name__)
-CORS(app)
-
-
 @app.route("/logout", methods=["POST"])
 def logout(): 
-
-    data = request.get_json()
-    print("\n\nData is : ", data, "\n\n")
-    sqlFormula = "UPDATE users SET loginStatus = %s, token = %s WHERE idusers = %s"
-    sqlTuple = (0, random.randint(0, 999), data["idusers"])
-    myDB.sqlChange(sqlFormula, sqlTuple)
-
+    print("ESTOU AQUI")
     return jsonify(True)
+    # data = request.get_json()
+    # print("\n\nData is : ", data, "\n\n")
+    # sqlFormula = "UPDATE users SET loginStatus = %s, token = %s WHERE idusers = %s"
+    # sqlTuple = (0, random.randint(0, 999), data["idusers"])
+    # noError = myDB.sqlChange(sqlFormula, sqlTuple)
+
+    # return jsonify(noError)
 
 @app.route("/login", methods=["POST"])
 def login():  
