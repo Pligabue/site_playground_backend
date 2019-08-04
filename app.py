@@ -11,7 +11,6 @@ import hashlib
 @app.route("/logout", methods=["POST"])
 def logout(): 
     data = request.get_json()
-    print("\n\nData is : ", data, "\n\n")
     sqlFormula = "UPDATE users SET loginStatus = %s, token = %s WHERE idusers = %s"
     sqlTuple = (0, random.randint(0, 999), data["idusers"])
     noError = myDB.sqlChange(sqlFormula, sqlTuple)
@@ -56,11 +55,15 @@ def verifyToken():
 
     data = request.get_json()
 
-    sqlFormula = "SELECT token FROM users WHERE idusers = " + str(data["idusers"])
+    sqlFormula = "SELECT token, loginStatus FROM users WHERE idusers = " + str(data["idusers"])
     
-    token = myDB.sqlQuery(sqlFormula)[0][0]
+    query = myDB.sqlQuery(sqlFormula)
+    token = query[0][0]
+    loginStatus = query[0][1]
+
+    print("TOKEN: ", token, "\nLoginStatus ", loginStatus)
     
-    if token == data["token"]:
+    if token == data["token"] and loginStatus == 1:
         
         return jsonify(True)
         
