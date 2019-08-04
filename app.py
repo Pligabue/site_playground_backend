@@ -10,15 +10,13 @@ import hashlib
 
 @app.route("/logout", methods=["POST"])
 def logout(): 
-    print("ESTOU AQUI")
-    return jsonify(True)
-    # data = request.get_json()
-    # print("\n\nData is : ", data, "\n\n")
-    # sqlFormula = "UPDATE users SET loginStatus = %s, token = %s WHERE idusers = %s"
-    # sqlTuple = (0, random.randint(0, 999), data["idusers"])
-    # noError = myDB.sqlChange(sqlFormula, sqlTuple)
+    data = request.get_json()
+    print("\n\nData is : ", data, "\n\n")
+    sqlFormula = "UPDATE users SET loginStatus = %s, token = %s WHERE idusers = %s"
+    sqlTuple = (0, random.randint(0, 999), data["idusers"])
+    noError = myDB.sqlChange(sqlFormula, sqlTuple)
 
-    # return jsonify(noError)
+    return jsonify(noError)
 
 @app.route("/login", methods=["POST"])
 def login():  
