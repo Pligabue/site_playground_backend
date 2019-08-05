@@ -60,8 +60,6 @@ def verifyToken():
     query = myDB.sqlQuery(sqlFormula)
     token = query[0][0]
     loginStatus = query[0][1]
-
-    print("TOKEN: ", token, "\nLoginStatus ", loginStatus)
     
     if token == data["token"] and loginStatus == 1:
         
@@ -81,8 +79,24 @@ def signUp():
     sqlFormula = "INSERT INTO users (email, username, password, loginStatus, token, isActive, admin) VALUES (%s, %s, %s, %s, %s, %s, %s)"
     
     sqlTuple = (data["email"], data["user"], h, False, random.randint(0, 999), True, False)
-    myDB.sqlChange(sqlFormula, sqlTuple)
+    noError = myDB.sqlChange(sqlFormula, sqlTuple)
+
+    return jsonify(noError)
+
+
+@app.route("/profile/<int:idusers>", methods=["GET"])
+def getProfile(idusers):
+    
+    sqlFormula = "SELECT username, email FROM users WHERE idusers = " + str(idusers)
+    query = myDB.sqlQuery(sqlFormula)
+
+    data = {
+        "username": query[0][0],
+        "email": query[0][1]
+    }
+    
     return jsonify(data)
+
 
 @app.route("/edit/name", methods=["PUT"])
 def editName():
