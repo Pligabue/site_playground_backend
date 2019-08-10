@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask import Flask, jsonify, request, make_response
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +18,9 @@ def logout():
     return jsonify(noError)
 
 @app.route("/login", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def login():  
+    
 
     data = request.get_json()
 
@@ -40,15 +42,18 @@ def login():
             "token" : user[0][1],
             "idusers" : user[0][2]
         }
+    
+        res = make_response("token")
+        res.set_cookie(key="token", value=str(response["idusers"]))
 
-        return jsonify(response)
+        return res
 
     response = {
         "token" : False,
         "idusers" : False
     }
 
-    return jsonify(response)
+    return res
 
 @app.route("/verifylogin", methods=["POST"])
 def verifyToken():
@@ -124,6 +129,15 @@ def editDelete():
     sqlTuple = (data["idusers"], )
     myDB.sqlChange(sqlFormula, sqlTuple)
     return    
+
+@app.route("/cookie")
+def checkCookie():
+    if not request.cookies.get('token'):
+        res = make_response("Setting a cookie")
+        res.set_cookie('token', 'bar', max_age=60*60*24*365*2)
+    else:
+        res = make_response("Value of cookie token is {}".format(request.cookies.get('token')))
+    return res
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) #run app in debug mode on port 5000
