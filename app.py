@@ -44,7 +44,8 @@ def login():
         }
     
         res = make_response("token")
-        res.set_cookie(key="token", value=str(response["idusers"]))
+        res.set_cookie(key="tokenPL", value=str(response["token"]), max_age=60*60*24*30)
+        res.set_cookie(key="idusersPL", value=str(response["idusers"]), max_age=60*60*24*30)
 
         return res
 
@@ -53,24 +54,33 @@ def login():
         "idusers" : False
     }
 
-    return res
+    return False
 
-@app.route("/verifylogin", methods=["POST"])
+@app.route("/verifylogin", methods=["GET"])
+@cross_origin(supports_credentials=True)
 def verifyToken():
 
-    data = request.get_json()
-
-    sqlFormula = "SELECT token, loginStatus FROM users WHERE idusers = " + str(data["idusers"])
     
+    tokenPL = request.cookies.get('tokenPL')
+    idusersPL = request.cookies.get('idusersPL')
+    print("TOKENPL IS ", tokenPL, " idusers IS ", idusersPL)
+    
+    print("Type of TOKENPL IS ", type(tokenPL), " Type of idusers IS ", type(idusersPL))
+
+    # if tokenPL != None and idusersPL != None:
+    #     return
+
+    sqlFormula = "SELECT token, loginStatus FROM users WHERE idusers = " + idusersPL
+    print("SQLFormula: ", sqlFormula)
     query = myDB.sqlQuery(sqlFormula)
     token = query[0][0]
     loginStatus = query[0][1]
     
-    if token == data["token"] and loginStatus == 1:
-        
-        return jsonify(True)
-        
-    return jsonify(False)
+    print("TOKENPL IS ", tokenPL, " Token IS ", token, " loginStatus IS ", loginStatus)
+
+    if token == int(tokenPL) and loginStatus == 1:
+        return "Success"
+    return 
 
 @app.route("/signup", methods=["POST"])
 def signUp():
