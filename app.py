@@ -80,7 +80,7 @@ def signUp():
     
     sqlFormula = "INSERT INTO users (email, username, password, loginStatus, token, isActive, admin) VALUES (%s, %s, %s, %s, %s, %s, %s)"
     
-    sqlTuple = (data["email"], data["user"], h, False, random.randint(0, 999), True, False)
+    sqlTuple = (data["email"], data["username"], h, False, random.randint(0, 999), True, False)
     noError = myDB.sqlChange(sqlFormula, sqlTuple)
 
     return jsonify(noError)
@@ -100,14 +100,14 @@ def getProfile(idusers):
     return jsonify(data)
 
 
-@app.route("/edit/name", methods=["PUT"])
+@app.route("/edit/username", methods=["PUT"])
 def editName():
 
     data = request.get_json()
-    sqlFormula = "UPDATE users SET name = %s WHERE idusers = %s"
-    sqlTuple = (data["name"], data["idusers"])
-    myDB.sqlChange(sqlFormula, sqlTuple)
-    return
+    sqlFormula = "UPDATE users SET username = %s WHERE idusers = %s"
+    sqlTuple = (data["username"], data["idusers"])
+    noError = myDB.sqlChange(sqlFormula, sqlTuple)
+    return jsonify(noError)
 
 @app.route("/edit/email", methods=["PUT"])
 def editEmail():
@@ -115,8 +115,8 @@ def editEmail():
     data = request.get_json()
     sqlFormula = "UPDATE users SET email = %s WHERE idusers = %s"
     sqlTuple = (data["email"], data["idusers"])
-    myDB.sqlChange(sqlFormula, sqlTuple)
-    return
+    noError = myDB.sqlChange(sqlFormula, sqlTuple)
+    return jsonify(noError)
 
 @app.route("/edit/delete", methods=["DELETE"])
 def editDelete():
@@ -127,14 +127,7 @@ def editDelete():
     myDB.sqlChange(sqlFormula, sqlTuple)
     return    
 
-@app.route("/cookie")
-def checkCookie():
-    if not request.cookies.get('token'):
-        res = make_response("Setting a cookie")
-        res.set_cookie('token', 'bar', max_age=60*60*24*365*2)
-    else:
-        res = make_response("Value of cookie token is {}".format(request.cookies.get('token')))
-    return res
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) #run app in debug mode on port 5000
