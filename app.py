@@ -58,6 +58,9 @@ def verifyToken():
     tokenPL = request.cookies.get('tokenPL')
     idusersPL = request.cookies.get('idusersPL')
 
+    if type(tokenPL) != str or type(idusersPL) != str:
+        return
+
     sqlFormula = "SELECT token, loginStatus FROM users WHERE idusers = " + idusersPL
     print("SQLFormula: ", sqlFormula)
     query = myDB.sqlQuery(sqlFormula)
@@ -119,13 +122,16 @@ def editEmail():
     return jsonify(noError)
 
 @app.route("/edit/delete", methods=["DELETE"])
+@cross_origin(supports_credentials=True)
 def editDelete():
 
-    data = request.get_json()
+    idusersPL = request.cookies.get('idusersPL')
+    
     sqlFormula = "DELETE FROM users WHERE idusers = %s"
-    sqlTuple = (data["idusers"], )
-    myDB.sqlChange(sqlFormula, sqlTuple)
-    return    
+    sqlTuple = (idusersPL, )
+    noError = myDB.sqlChange(sqlFormula, sqlTuple)
+    
+    return jsonify(noError)   
 
 
 if __name__ == '__main__':
