@@ -7,6 +7,31 @@ CORS(app)
 import random
 import myDB
 import hashlib
+from myException import InvalidUsage
+
+def tokenCheck(idusersPL, tokenPL):
+    
+    sqlFormula = "SELECT token, loginStatus FROM users WHERE idusers = " + idusersPL
+    
+    query = myDB.sqlQuery(sqlFormula)
+    token = query[0][0]
+    loginStatus = query[0][1]
+    
+    if token == int(tokenPL) and loginStatus == 1:
+        return True 
+    return False
+
+
+
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
+
+
+
+
 
 @app.route("/logout", methods=["POST"])
 def logout(): 
@@ -54,15 +79,16 @@ def login():
 @cross_origin(supports_credentials=True)
 def verifyToken():
 
+    try:
+        tokenPL = request.cookies.get('tokenPL')
+        idusersPL = request.cookies.get('idusersPL')
+    except AttributeError as error:
+        print(error)
+        raise InvalidUsage("Erro ao fazer Login. Tente novamente." , status_code=401)
+
     
-    tokenPL = request.cookies.get('tokenPL')
-    idusersPL = request.cookies.get('idusersPL')
-
-    if type(tokenPL) != str or type(idusersPL) != str:
-        return
-
     sqlFormula = "SELECT token, loginStatus FROM users WHERE idusers = " + idusersPL
-    print("SQLFormula: ", sqlFormula)
+    
     query = myDB.sqlQuery(sqlFormula)
     token = query[0][0]
     loginStatus = query[0][1]
@@ -132,6 +158,42 @@ def editDelete():
     noError = myDB.sqlChange(sqlFormula, sqlTuple)
     
     return jsonify(noError)   
+
+@app.route("/post/set", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def setPost():
+
+    try:
+        tokenPL = request.cookies.get('tokenPL')
+        idusersPL = request.cookies.get('idusersPL')
+    except AttributeError as error:
+        print(error)
+        raise InvalidUsage("Erro na autenticação. Tente novamente." , status_code=401)
+
+    if tokenCheck(idusersPL, tokenPL):
+
+        data = request.get_json()
+        sqlFormula = "INSERT INTO posts (idusers, text, time) VALUES (%s, %s, %s)"
+        sqlTuple = (idusersPL, data["text"], data["time"])
+        noError = myDB.sqlChange(sqlFormula, sqlTuple)
+        
+        if noError:
+            return
+
+    raise InvalidUsage("Erro ao salvar o post. Tente novamente." , status_code=410)
+    
+
+@app.route("/post/get/page/<int:page>/<int:perPage>", methods=["GET"])
+def getPage(page, perPage):
+    
+    return
+
+@app.route("/post/get/<int:idposts>", methods=["GET"])
+def getPost(idposts):
+    
+    return
+
+
 
 
 if __name__ == '__main__':
