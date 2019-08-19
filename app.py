@@ -159,7 +159,7 @@ def editDelete():
     
     return jsonify(noError)   
 
-@app.route("/post/set", methods=["POST"])
+@app.route("/posts/set", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def setPost():
 
@@ -173,25 +173,60 @@ def setPost():
     if tokenCheck(idusersPL, tokenPL):
 
         data = request.get_json()
-        sqlFormula = "INSERT INTO posts (idusers, text, time) VALUES (%s, %s, %s)"
-        sqlTuple = (idusersPL, data["text"], data["time"])
+        sqlFormula = "INSERT INTO posts (idusers, title, text, time) VALUES (%s, %s, %s, %s)"
+        sqlTuple = (idusersPL, data["title"], data["text"], data["time"])
         noError = myDB.sqlChange(sqlFormula, sqlTuple)
         
         if noError:
-            return
+            return "Post salvo com sucesso."
 
     raise InvalidUsage("Erro ao salvar o post. Tente novamente." , status_code=410)
     
 
-@app.route("/post/get/page/<int:page>/<int:perPage>", methods=["GET"])
+@app.route("/posts/page/<int:page>/<int:perPage>", methods=["GET"])
 def getPage(page, perPage):
-    
-    return
+    sqlFormula = """
+        SELECT *
+        FROM 
+            (SELECT idusers, username, idposts, title, text, time, ROW_NUMBER() OVER(ORDER BY time DESC) AS row_num
+            FROM site_playground.posts NATURAL JOIN site_playground.users) as myRows
+        WHERE row_num >= """ + str((page-1)*perPage + 1) + " and row_num <= " + str(((page-1)*perPage + perPage))
 
-@app.route("/post/get/<int:idposts>", methods=["GET"])
+    query = myDB.sqlQuery(sqlFormula)
+    if type(query) != list:
+        raise InvalidUsage("Erro ao acessar o banco de dados.", status_code=500)
+
+    keys = ["idusers", "username", "idposts", "title", "text", "time", "row"]
+    dataList = []
+    for post in query:
+        d = {}
+        for i, value in enumerate(post):
+            d.update(dict(((keys[i], value), )))
+        dataList.append(d)
+    
+    return jsonify(dataList)
+
+@app.route("/posts/id/<string:idposts>", methods=["GET"])
 def getPost(idposts):
     
-    return
+    sqlFormula = """
+        SELECT *
+        FROM 
+            (SELECT idusers, username, idposts, title, text, time, ROW_NUMBER() OVER(ORDER BY time DESC) AS row_num
+            FROM site_playground.posts NATURAL JOIN site_playground.users) as myRows
+        WHERE idposts = """ + idposts
+
+    query = myDB.sqlQuery(sqlFormula)
+    if type(query) != list:
+        raise InvalidUsage("Erro ao acessar o banco de dados.", status_code=500)
+
+    keys = ["idusers", "username", "idposts", "title", "text", "time", "row"]
+    
+    d = {}
+    for i, value in enumerate(query[0]):
+        d.update(dict(((keys[i], value), )))
+    
+    return jsonify(d)
 
 
 
